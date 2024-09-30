@@ -20,10 +20,21 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from django.urls import path
+from django.contrib.auth import views as a_view  # Make sure your views are imported
+from tasks import views as b_view  # Make sure your views are imported
+from django.urls import path
+from tasks import views
 
 urlpatterns = [
+    path('', views.home, name='home'),
+    path('tasks/api/<int:task_id>/', views.task_api, name='task_api'),
     path('admin/', admin.site.urls),
     path('api/', include('tasks.urls')),  # Add API routes for tasks
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('login/', a_view.LoginView.as_view(), name='login'),  # Assuming you're using Django's built-in login view
+    path('logout/', a_view.LogoutView.as_view(), name='logout'),  # Logout URL
+    path('register/', b_view.register, name='register'),  # Assuming you have a custom register view
+
 ]
