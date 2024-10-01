@@ -36,5 +36,6 @@ urlpatterns = [
     path('login/', a_view.LoginView.as_view(), name='login'),  # Assuming you're using Django's built-in login view
     path('logout/', a_view.LogoutView.as_view(), name='logout'),  # Logout URL
     path('register/', b_view.register, name='register'),  # Assuming you have a custom register view
+    path('tasks/', views.TaskListCreateView.as_view(), name='tasks-list'),  # List and create tasks     #this was an error, this line added while unit testing.
 
 ]
