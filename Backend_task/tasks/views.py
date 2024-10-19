@@ -1,9 +1,14 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from .models import Task
+from .models import Task, TaskForm
 from .serializers import TaskSerializer
+'''
 
-class TaskViewSet(viewsets.ModelViewSet):
+&&&&&&&&&&&&&&&
+This file contains the logic behind your web pages or API endpoints.
+
+'''
+class TaskViewSet(viewsets.ModelViewSet):   # provide CRUD op. for model
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
@@ -12,7 +17,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         return self.queryset.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        serializer.save(user=self.request.user) # add owner user of the task
 
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
@@ -24,9 +29,9 @@ def register(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
+            login(request, user)    # log the user into application as authenticated
             messages.success(request, 'Registration successful!')
-            return redirect('/')  # Redirect to home page after successful registration
+            return redirect('/login')  # Redirect to home page after successful registration
     else:
         form = UserCreationForm()
 
@@ -35,11 +40,10 @@ def register(request):
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .models import Task
 from .serializers import TaskSerializer
 
 # List all tasks or create a new task
-class TaskListCreateView(generics.ListCreateAPIView):
+class TaskListCreateView(generics.ListCreateAPIView):   # provides GET & POST for model
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
 
@@ -47,7 +51,7 @@ class TaskListCreateView(generics.ListCreateAPIView):
         return Task.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        serializer.save(user=self.request.user) # add owner user of the task
 
 
 # Retrieve, Update or Delete a specific task
@@ -58,13 +62,11 @@ class TaskRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         return Task.objects.filter(user=self.request.user)
 
-from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from .models import Task, TaskForm
 
 # Ensure the user is logged in before accessing the home page
-@login_required
+@login_required(login_url='/login/')
 def home(request):
     # Fetch the authenticated user's tasks
     tasks = Task.objects.filter(user=request.user)
@@ -82,7 +84,6 @@ def home(request):
 
     return render(request, 'home.html', {'tasks': tasks, 'form': form})
 
-
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_http_methods
@@ -90,7 +91,7 @@ from .models import Task
 import json
 
 # API endpoint to handle PUT and DELETE operations
-@login_required
+@login_required(login_url='/login/')
 @require_http_methods(["DELETE", "PUT"])
 def task_api(request, task_id):
     task = get_object_or_404(Task, id=task_id, user=request.user)
@@ -124,3 +125,14 @@ def task_api(request, task_id):
             return JsonResponse({'error': 'Invalid JSON format'}, status=400)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+from django.shortcuts import redirect
+from django.contrib.auth import logout
+
+def logout_view(request):
+    logout(request)
+    response = redirect('/login/')
+    response.delete_cookie('access_token')
+    response.delete_cookie('refresh_token')
+    return response
+

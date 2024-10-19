@@ -13,9 +13,8 @@
         <nav>
             <ul>
                 {% if user.is_authenticated %}
-                    <li><a href="{% url 'logout' %}">Logout</a></li>
+                    <h4></h4>
                 {% else %}
-                    <li><a href="{% url 'login' %}">Login</a></li>
                     <li><a href="{% url 'register' %}">Register</a></li>
                 {% endif %}
             </ul>
@@ -30,12 +29,10 @@
           {% csrf_token %}
           {{ form.as_p }}
           <button type="submit">Register</button>
-        </form>        {% endblock %}
+        </form>        
+        {% endblock %}
     </div>
+    <a href="{% url 'login' %}"><button type="submit">Login</button></a>
 
-    <!-- Footer -->
-    <footer>
-        <p>&copy; 2024 My Django App. All rights reserved.</p>
-    </footer>
 </body>
 </html>

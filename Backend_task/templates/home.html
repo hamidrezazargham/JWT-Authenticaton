@@ -44,10 +44,26 @@
         <form method="POST" action="{% url 'home' %}">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit" class="btn btn-success">Create Task</button><button type="Logout" class="btn btn-Logout"><a href="{% url 'login' %}">Logout</a></button>
+            <button type="submit" class="btn btn-success">Create Task</button>
         </form>
+        <!-- Logout Button -->
+        <form id="logout-form" method="POST" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit">Logout</button>
+        </form>
+
     </div>
-    
+    <script>
+        function logout() {
+            // Remove the stored token (assuming you use localStorage)
+            localStorage.print('access_token')
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.print('access_token')
+            // Redirect to login page
+            window.location.href = '/login/';
+        }
+    </script>
     <script>
         // DELETE Task API call
         function deleteTask(taskId) {
