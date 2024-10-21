@@ -3,44 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Management</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-</head>
-<body>
-    <div class="container mt-5">
-        <h2>Welcome, {{ user.username }}</h2>
-        <h3>Your Tasks</h3>
+    <style>
+        body {
+            font-family: 'Verdana', sans-serif;
+            background: linear-gradient(150deg, #fff6e8, #4484c4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
 
-        <!-- Task List View (GET operation) -->
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Description</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for task in tasks %}
-                <tr>
+        .task-container {
+            width: 90%;
+            margin: 40px;
+            background-color: #fff6e8;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px 10px;
+            text-align: center;
+        }
+
+        .draggable {
+            cursor: grab;
+            padding: 10px;
+            background-color: #fff6e8;
+            margin: 5px;
+            text-align: center;
+            width: 100px;
+            height: 40px;
+            line-height: 40px;
+        }
+
+        .droppable {
+            min-height: 100px;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            transition: border-color 0.2s ease-in-out;
+        }
+
+        .over {
+            border-color: #00ff00;
+        }
+
+    </style>
+</head>
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+</script>
+<body>
+    <h3 style="font-family:Verdana; background-color:#4fb5dd; padding: 30px; text-align:center; border-radius:0px 0px 40px 40px;">Tasks</h3>
+
+    <!-- To Do Column -->
+    <table class="task-container">
+        <thead style="text-align: center">
+            <tr>
+                <th colspan="4" style="padding-bottom: 40px;">To Do</th>
+            </tr>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="To-Do" class="droppable" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <tr><td style="padding-top:20px; padding-bottom:30px;"></td><td></td><td></td><td></td></tr>
+            {% for task in tasks %}
+                {% if task.get_status_display == 'To Do' %}
+                <tr id="{{ task.id }}" class="draggable" draggable="true" ondragstart="drag(event)">
                     <td>{{ task.title }}</td>
                     <td>{{ task.description }}</td>
                     <td>{{ task.get_status_display }}</td>
                     <td>
-                        <!-- Update (PUT operation) -->
                         <button class="btn btn-primary" onclick="editTask({{ task.id }})">Edit</button>
-                        <!-- Delete (DELETE operation) -->
                         <button class="btn btn-danger" onclick="deleteTask({{ task.id }})">Delete</button>
                     </td>
                 </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                {% endif %}
+            {% endfor %}
+            
+        </tbody>
+    </table>
 
+    <!-- In Progress Column -->
+    <table class="task-container">
+        <thead style="text-align: center;">
+            <tr>
+                <th colspan="4" style="padding-bottom: 40px;">In Progress</th>
+            </tr>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="In-Progress" class="droppable" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <tr><td style="padding-top:20px; padding-bottom:30px;"></td><td></td><td></td><td></td></tr>
+            {% for task in tasks %}
+                {% if task.get_status_display == 'In Progress' %}
+                <tr id="{{ task.id }}" class="draggable" draggable="true" ondragstart="drag(event)">
+                    <td>{{ task.title }}</td>
+                    <td>{{ task.description }}</td>
+                    <td>{{ task.get_status_display }}</td>
+                    <td>
+                        <button class="btn btn-primary" onclick="editTask({{ task.id }})">Edit</button>
+                        <button class="btn btn-danger" onclick="deleteTask({{ task.id }})">Delete</button>
+                    </td>
+                </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Done Column -->
+    <table class="task-container">
+        <thead style="text-align: center">
+            <tr>
+                <th colspan="4" style="padding-bottom: 40px;">Done</th>
+            </tr>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="Done" class="droppable" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <tr><td style="padding-top:20px; padding-bottom:30px;"></td><td></td><td></td><td></td></tr>
+            {% for task in tasks %}
+            {% if task.get_status_display == 'Done' %}
+            <tr id="{{ task.id }}" class="draggable" draggable="true" ondragstart="drag(event)">
+                <td>{{ task.title }}</td>
+                <td>{{ task.description }}</td>
+                <td>{{ task.get_status_display }}</td>
+                <td>
+                    <button class="btn btn-primary" onclick="editTask({{ task.id }})">Edit</button>
+                    <button class="btn btn-danger" onclick="deleteTask({{ task.id }})">Delete</button>
+                </td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    <div>
         <!-- Task Creation Form (POST operation) -->
         <h3>Create a New Task</h3>
+        <hr>
+        <br>
         <form method="POST" action="{% url 'home' %}">
             {% csrf_token %}
             {{ form.as_p }}
@@ -54,6 +180,44 @@
 
     </div>
     <script>
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+        
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+        }
+        
+        function drop(ev) {
+            ev.preventDefault();
+            var data = ev.dataTransfer.getData("text");
+            var taskElement = document.getElementById(data);
+            ev.target.appendChild(taskElement);
+            
+            // Assuming the new status is based on the column or section ID where the item is dropped
+            newStatus = ev.target.parentElement.parentElement.id.replace('-',' ');            
+
+            updateTaskStatus(data, newStatus);  // Pass the numeric task ID
+            window.location.reload();
+
+        }
+        
+        function updateTaskStatus(taskId, newStatus) {
+            const csrfToken = getCookie('csrftoken');  // Get the CSRF token
+        
+            fetch('/update-task-status/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,  // Add CSRF token to the request headers
+                },
+                body: JSON.stringify({
+                    task_id: taskId,  // Send the numeric task ID
+                    status: newStatus,  // New status from the drop
+                })
+            })
+        } 
+
         function logout() {
             // Remove the stored token (assuming you use localStorage)
             localStorage.print('access_token')
@@ -64,8 +228,9 @@
             window.location.href = '/login/';
         }
     </script>
+
     <script>
-        // DELETE Task API call
+        // DELETE Task
         function deleteTask(taskId) {
             if (confirm("Are you sure you want to delete this task?")) {
                 axios({
@@ -80,32 +245,32 @@
                     window.location.reload();  // Reload the page after successful deletion
                 })
                 .catch(error => {
-                    console.error(error);  // Log the error for debugging
+                    console.error(error);
                     alert('Failed to delete the task.');
                 });
             }
         }
 
-        // PUT Task API call (You'd implement the editTask function to handle the PUT operation)
+        // PUT Task (edit)
         function editTask(taskId) {
             const newTitle = prompt('Enter new title:');
             if (!newTitle) {
                 alert('Task title cannot be empty.');
                 return;
             }
-    
+
             const newDescription = prompt('Enter new description:');
             if (!newDescription) {
                 alert('Task description cannot be empty.');
                 return;
             }
-    
+
             const newStatus = prompt('Enter new status (To Do, In Progress, Done):');
             if (!newStatus) {
                 alert('Task status cannot be empty.');
                 return;
             }
-    
+
             axios({
                 method: 'put',
                 url: `/tasks/api/${taskId}/`,
@@ -116,7 +281,7 @@
                 }),
                 headers: {
                     'X-CSRFToken': '{{ csrf_token }}',
-                    'Content-Type': 'application/json',  // Ensure the content type is JSON
+                    'Content-Type': 'application/json',
                 }
             })
             .then(response => {

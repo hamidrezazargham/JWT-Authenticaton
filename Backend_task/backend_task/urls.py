@@ -29,5 +29,6 @@ urlpatterns = [
     path('logout/', b_view.logout_view, name='logout'),  # Logout URL
     path('register/', b_view.register, name='register'),  # Assuming you have a custom register view
     path('tasks/', b_view.TaskListCreateView.as_view(), name='tasks-list'),  # List and create tasks     #this was an error, this line added while unit testing.
+    path('update-task-status/', b_view.update_task_status, name='update_task_status')
 
 ]

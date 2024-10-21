@@ -12,4 +12,5 @@ urlpatterns = [
     path('logout/', b_view.logout_view, name='logout'),
     path('homepage/', b_view.home, name='home'),
     path('register/', b_view.register, name='register'),  # Assuming you have a custom register view
+    
 ]

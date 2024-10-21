@@ -136,3 +136,32 @@ def logout_view(request):
     response.delete_cookie('refresh_token')
     return response
 
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from .models import Task
+from django.views.decorators.csrf import csrf_exempt
+@csrf_exempt
+@require_POST
+def update_task_status(request):
+    # Parse JSON data sent from the front-end
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)  # Load the JSON data
+            task_id = int(data.get('task_id'))  # Extract task ID (make sure to convert it to int)
+            new_status = data.get('status')  # Extract the new status
+            task = Task.objects.get(id=task_id)
+            if new_status == "To Do":
+                task.status = 'To Do'  # Assuming '1' represents "To Do" in your model
+            elif new_status == "In Progress":
+                task.status = 'In Progress'  # Assuming '2' represents "In Progress"
+            elif new_status == "Done":
+                task.status = 'Done'  # Assuming '3' represents "Done"
+            # Update the task status
+            task.save()
+
+            return JsonResponse({'success': True})
+        except Task.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Task not found.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'})
