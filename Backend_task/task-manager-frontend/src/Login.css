@@ -1,0 +1,95 @@
+/* Container for the login page */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa, #c3cfe2); /* Gradient background */
+}
+.login-container2 {
+    display: flex;
+    justify-content: center;
+    border-radius: 12px;
+    padding: 10px;
+    align-items: center;
+    height: 10vh;
+    background: linear-gradient(115deg, #c3cfe2, #f5f7fa); /* Gradient background */
+}
+
+/* Styles for the login form */
+.login-form {
+    background-color: #ffffff; /* White background for the form */
+    padding: 50px;
+    border-radius: 12px; /* Rounded corners */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); /* More prominent shadow */
+    width: 320px; /* Fixed width for the form */
+    transition: transform 0.3s; /* Transition for hover effect */
+}
+
+/* Header styles */
+.login-form h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Styles for input groups */
+.input-group {
+    margin-bottom: 15px;
+}
+
+/* Styles for input labels */
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+/* Styles for inputs */
+.input-group input {
+    width: 100%;
+    padding: 12px; /* Increased padding */
+    border: 1px solid #ccc;
+    border-radius: 6px; /* Rounded corners for inputs */
+    font-size: 16px;
+    transition: border-color 0.3s, box-shadow 0.3s; /* Smooth transitions */
+}
+
+/* Focus styles for inputs */
+.input-group input:focus {
+    border-color: #007bff; /* Change border color on focus */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Add shadow effect on focus */
+    outline: none; /* Remove default outline */
+}
+
+/* Error message styles */
+.error-message {
+    color: #dc3545; /* Red color for error messages */
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+/* Styles for the login button */
+.login-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #007bff; /* Blue background for the button */
+    color: white;
+    border: none;
+    border-radius: 6px; /* Rounded corners for the button */
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s; /* Smooth transitions */
+}
+
+/* Button hover styles */
+.login-button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+    transform: translateY(-2px); /* Slight lift effect */
+}
+
+/* Button active styles */
+.login-button:active {
+    transform: translateY(0); /* Reset the lift effect */
+}

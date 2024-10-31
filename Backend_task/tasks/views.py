@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from .models import Task, TaskForm
-from .serializers import TaskSerializer
+from .serializers import TaskSerializer, UserSerializer
 '''
 
 &&&&&&&&&&&&&&&
@@ -165,3 +165,14 @@ def update_task_status(request):
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)})
     return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .models import Task
+from .serializers import TaskSerializer
+
+class TaskListCreate(APIView):
+    def get(self, request):
+        tasks = Task.objects.all()
+        serializer = TaskSerializer(tasks, many=True)
+        return Response(serializer.data)
