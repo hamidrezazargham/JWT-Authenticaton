@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from './axiosInstance'; // Custom axios instance
 import TaskForm from './TaskForm';
+import { useNavigate } from 'react-router-dom';
 import './TaskList.css';
 
-const TaskList = ({ onLogout }) => {
+const TaskList = () => {
+    const token = localStorage.getItem('authToken');  // Retrieve the token from localStorage
     const [tasks, setTasks] = useState([]);
     const [editingTask, setEditingTask] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchTasks();
@@ -13,59 +16,148 @@ const TaskList = ({ onLogout }) => {
 
     const fetchTasks = async () => {
         try {
-            const response = await axiosInstance.get('/tasks/');
-            setTasks(response.data);
+            if (token) {
+                const response = await axiosInstance.get('/tasks/list/', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`, 
+                    }
+                });
+    
+                setTasks(response.data); 
+            } else {
+                console.log('No token found. Please log in.');
+            }
         } catch (error) {
             console.error('Error fetching tasks:', error);
+            if (error.response && error.response.status === 401) {
+                console.log('Unauthorized. Redirecting to login...');
+            }
         }
+    };
+    
+    const onLogout = () => {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('csrfToken');
+        navigate('/login');
     };
 
     const deleteTask = async (id) => {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            console.log('No token found. Please log in.');
+            return; 
+        }
+
         try {
-            await axiosInstance.delete(`/tasks/${id}/`);
-            fetchTasks(); // Refresh task list
+            await axiosInstance.delete(`/tasks/${id}/`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            fetchTasks(); 
         } catch (error) {
             console.error('Error deleting task:', error);
+            if (error.response && error.response.status === 401) {
+                console.log('Unauthorized. Redirecting to login...');
+            }
         }
     };
 
-    const handleEdit = (task) => {
+
+    const handleEdit = async (task) => {
         setEditingTask(task);
+    
+        try {
+            const token = localStorage.getItem('authToken');  
+    
+            if (token) {
+                const response = await axiosInstance.put(`/tasks/${task.id}/`, task, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,  
+                    }
+                });
+    
+                console.log('Task updated:', response.data);
+                fetchTasks();  // Refresh the task list after the update
+            } else {
+                console.log('No token found. Please log in.');
+            }
+        } catch (error) {
+            console.error('Error updating task:', error);
+            if (error.response && error.response.status === 401) {
+                console.log('Unauthorized. Redirecting to login...');
+            }
+        }
     };
+    
 
     const handleSaveTask = async (taskData) => {
         try {
-            if (editingTask) {
-                await axiosInstance.put(`/tasks/${editingTask.id}/`, taskData);
-            } else {
-                await axiosInstance.post('/tasks/', taskData);
+            const token = localStorage.getItem('authToken');  // Retrieve the token from localStorage
+    
+            if (!token) {
+                console.log('No token found. Please log in.');
+                return;  // Stop if there's no token
             }
+    
+            const headers = {
+                'Authorization': `Bearer ${token}`, 
+            };
+    
+            if (editingTask) {
+                await axiosInstance.put(`/tasks/${editingTask.id}/`, taskData, { headers });
+            } else {
+                await axiosInstance.post('/tasks/list/', taskData, { headers });
+            }
+    
             setEditingTask(null);
-            fetchTasks();
+            fetchTasks();  // Refresh task list
         } catch (error) {
             console.error('Failed to save the task:', error.response ? error.response.data : error.message);
             alert('Failed to save the task. Please try again.');
         }
     };
+    
 
-    // Handle the drag and drop functionality
     const handleDragStart = (event, task) => {
         event.dataTransfer.setData('task', JSON.stringify(task));
+    
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            console.log('No token found. Please log in.');
+            return;
+        }
+    
+        console.log('Token retrieved for future use:', token);
     };
+    
 
     const handleDrop = async (event, newStatus) => {
         event.preventDefault();
         const taskData = JSON.parse(event.dataTransfer.getData('task'));
+    
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            console.log('No token found. Please log in.');
+            return; 
+        }
+    
         if (taskData.status !== newStatus) {
-            // Update the task status if dropped into a different column
             try {
-                await axiosInstance.put(`/tasks/${taskData.id}/`, { ...taskData, status: newStatus });
+                await axiosInstance.put(`/tasks/${taskData.id}/`, 
+                    { ...taskData, status: newStatus }, 
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                        },
+                    });
                 fetchTasks();
             } catch (error) {
                 console.error('Error updating task status:', error);
             }
         }
     };
+    
 
     return (
         <div className="task-list-container">
@@ -74,16 +166,14 @@ const TaskList = ({ onLogout }) => {
                 <button className="logout-button" onClick={onLogout}>Logout</button>
             </header>
 
-            {/* Add Task Section */}
             <div className="task-form">
                 <h2 className="add-task-heading">Add Task</h2>
                 <TaskForm fetchTasks={fetchTasks} editingTask={editingTask} setEditingTask={setEditingTask} onSaveTask={handleSaveTask} />
             </div>
 
-            {/* Task Columns for Status */}
             <div className="task-columns">
                 <div className="task-column" onDrop={(event) => handleDrop(event, 'To Do')} onDragOver={(event) => event.preventDefault()}>
-                    <h3 className="column-heading">To Do</h3>
+                    <h3 className="column-heading1">To Do</h3>
                     <ul className="task-list">
                         {tasks.filter(task => task.status === 'To Do').map(task => (
                             <li
@@ -106,7 +196,7 @@ const TaskList = ({ onLogout }) => {
                 </div>
 
                 <div className="task-column" onDrop={(event) => handleDrop(event, 'In Progress')} onDragOver={(event) => event.preventDefault()}>
-                    <h3 className="column-heading">In Progress</h3>
+                    <h3 className="column-heading2">In Progress</h3>
                     <ul className="task-list">
                         {tasks.filter(task => task.status === 'In Progress').map(task => (
                             <li
@@ -129,7 +219,7 @@ const TaskList = ({ onLogout }) => {
                 </div>
 
                 <div className="task-column" onDrop={(event) => handleDrop(event, 'Done')} onDragOver={(event) => event.preventDefault()}>
-                    <h3 className="column-heading">Done</h3>
+                    <h3 className="column-heading3">Done</h3>
                     <ul className="task-list">
                         {tasks.filter(task => task.status === 'Done').map(task => (
                             <li

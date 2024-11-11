@@ -27,4 +27,3 @@ class TaskForm(forms.ModelForm):
     class Meta:     # specifies the model and fields to be included.
         model = Task
         fields = ['id', 'title', 'description', 'status']
-# provide a convenient way to collect user input for creating or editing tasks based on the Task model.

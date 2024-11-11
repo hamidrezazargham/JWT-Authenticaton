@@ -33,8 +33,6 @@ DEBUG = True
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.permissions.IsAuthenticated',
-
     ),
 }
 
@@ -56,17 +54,20 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
 
 ]
 
 ROOT_URLCONF = 'backend_task.urls'
-CORS_ALLOW_ALL_ORIGINS = True
+# Allow CORS requests from localhost:3000
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+]
 
 TEMPLATES = [
     {
@@ -85,7 +86,10 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'backend_task.wsgi.application'
+CSRF_COOKIE_NAME = "csrfToken"  # Make sure this matches the cookie name you're trying to get in the frontend
 
+
+CORS_ALLOW_CREDENTIALS = True  # Allow cookies and credentials
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases

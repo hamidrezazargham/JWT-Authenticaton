@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './TaskForm.css'; // Import the CSS for styling
+import axiosInstance from './axiosInstance'; // Ensure you have your axios instance properly set up
 
 const TaskForm = ({ fetchTasks, editingTask, setEditingTask, onSaveTask }) => {
     const [title, setTitle] = useState('');
@@ -18,11 +19,23 @@ const TaskForm = ({ fetchTasks, editingTask, setEditingTask, onSaveTask }) => {
         }
     }, [editingTask]);
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         const taskData = { title, description, status };
-        onSaveTask(taskData);
-        clearForm();
+
+        const token = localStorage.getItem('authtoken');
+        if (!token) {
+            console.log('No token found. Please log in.');
+            return; // Exit if there's no token
+        }
+
+        try {
+            await onSaveTask(taskData, token);
+            clearForm();
+        } catch (error) {
+            console.error('Error saving the task:', error);
+            alert('Failed to save the task. Please try again.');
+        }
     };
 
     const clearForm = () => {
@@ -34,8 +47,7 @@ const TaskForm = ({ fetchTasks, editingTask, setEditingTask, onSaveTask }) => {
 
     return (
         <div className="task-form-container">
-            <form className="task-form" 
-                onSubmit={handleSubmit}>
+            <form className="task-form" onSubmit={handleSubmit}>
                 <div className="input-group">
                     <label htmlFor="task-title">Task Title:</label>
                     <input

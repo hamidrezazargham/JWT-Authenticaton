@@ -85,13 +85,44 @@
     transform: scale(1.03);
 }
 
-.column-heading {
+.column-heading1 {
     font-size: 1.4em;
     text-align: center;
-    color: #338fa3;
-    margin-bottom: 15px;
+    color: #6fe5ff;
+    margin-bottom: 50px;
+    margin-right: 20px;
+    background-color: #e64545;
+    padding: 20px 10px;
+    margin-left: 20px;
     font-weight: bold;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    border-radius: 60% 60% 0% 0%;
+}
+.column-heading2 {
+    font-size: 1.4em;
+    text-align: center;
+    margin-bottom: 50px;
+    margin-right: 20px;
+    background-color:chocolate;
+    padding: 20px 10px;
+    margin-left: 20px;
+    color: #6fe5ff;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    border-radius: 60% 60% 0% 0%;
+}
+.column-heading3 {
+    font-size: 1.4em;
+    text-align: center;
+    color: #6fe5ff;
+    margin-bottom: 50px;
+    margin-right: 20px;
+    margin-left: 20px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    background-color: #4caf50;
+    border-radius: 60% 60% 0% 0%;
+    padding: 20px 10px;
 }
 
 /* Task Item Styling */

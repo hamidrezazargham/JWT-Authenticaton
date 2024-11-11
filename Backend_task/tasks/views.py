@@ -23,19 +23,125 @@ from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
 
-def register(request):
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)    # log the user into application as authenticated
-            messages.success(request, 'Registration successful!')
-            return redirect('/login')  # Redirect to home page after successful registration
+# views.py
+from django.contrib.auth.models import User
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.middleware.csrf import get_token
+
+
+from django.middleware.csrf import get_token
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+
+from django.contrib.auth import authenticate
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.middleware.csrf import get_token
+
+from django.contrib.auth import authenticate
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.middleware.csrf import get_token
+
+@api_view(['POST'])
+def login(request):
+    # Get username and password from the request
+    username = request.data.get('username')
+    password = request.data.get('password')
+
+    # Check if username and password are provided
+    if not username or not password:
+        return Response({'error': 'Username and password are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Authenticate the user
+    user = authenticate(username=username, password=password)
+
+    if user is not None:
+        # User is authenticated, generate JWT token
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
+
+        # Get CSRF token (you might want to include this in your response)
+        csrf_token = get_token(request)
+
+        return Response({
+            'message': 'Login successful',
+            'token': access_token,  # Return JWT token in the response
+            'csrfToken': csrf_token  # Include the CSRF token in the response
+        }, status=status.HTTP_200_OK)
+
     else:
-        form = UserCreationForm()
+        return Response({'error': 'Invalid username or password'}, status=status.HTTP_400_BAD_REQUEST)
 
-    return render(request, 'registration/register.html', {'form': form})
+# @api_view(['POST'])
+# def login(request):
+#     # Get username and password from the request
+#     username = request.data.get('username')
+#     password = request.data.get('password')
+
+#     # Check if username and password are provided
+#     if not username or not password:
+#         return Response({'error': 'Username and password are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+#     # Authenticate the user
+#     user = authenticate(username=username, password=password)
+
+#     if user is not None:
+#         # User is authenticated, generate JWT token
+#         refresh = RefreshToken.for_user(user)
+#         access_token = str(refresh.access_token)
+
+#         # Get CSRF token (you might want to include this in your response)
+#         csrf_token = get_token(request)
+
+#         return Response({
+#             'message': 'Login successful',
+#             'token': access_token,
+#             'csrfToken': csrf_token  # Include the CSRF token in the response
+#         }, status=status.HTTP_200_OK)
+
+#     else:
+#         return Response({'error': 'Invalid username or password'}, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['POST'])
+def register(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+
+    # Check if username and password are provided
+    if not username or not password:
+        return Response({'error': 'Username and password are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Check if user already exists
+    if User.objects.filter(username=username).exists():
+        return Response({'error': 'User with this username already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Create new user
+    user = User.objects.create_user(username=username, password=password)
+    user.save()
+
+    # Generate JWT token
+    refresh = RefreshToken.for_user(user)
+    access_token = str(refresh.access_token)
+
+    # Generate CSRF token (in case frontend expects it)
+    csrf_token = get_token(request)
+
+    return Response({
+        'message': 'User registered successfully',
+        'token': access_token,
+        'csrfToken': csrf_token
+    }, status=status.HTTP_201_CREATED)
+
 
 from rest_framework import generics, permissions
 from rest_framework.response import Response
@@ -143,20 +249,18 @@ from django.views.decorators.csrf import csrf_exempt
 @csrf_exempt
 @require_POST
 def update_task_status(request):
-    # Parse JSON data sent from the front-end
     if request.method == 'POST':
         try:
             data = json.loads(request.body)  # Load the JSON data
-            task_id = int(data.get('task_id'))  # Extract task ID (make sure to convert it to int)
-            new_status = data.get('status')  # Extract the new status
+            task_id = int(data.get('task_id'))  
+            new_status = data.get('status') 
             task = Task.objects.get(id=task_id)
             if new_status == "To Do":
-                task.status = 'To Do'  # Assuming '1' represents "To Do" in your model
+                task.status = 'To Do'
             elif new_status == "In Progress":
-                task.status = 'In Progress'  # Assuming '2' represents "In Progress"
+                task.status = 'In Progress'
             elif new_status == "Done":
-                task.status = 'Done'  # Assuming '3' represents "Done"
-            # Update the task status
+                task.status = 'Done' 
             task.save()
 
             return JsonResponse({'success': True})
